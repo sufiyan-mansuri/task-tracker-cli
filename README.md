@@ -2,6 +2,8 @@
 
 A lightweight command-line task tracker built in Python. No external dependencies — just add, update, delete, and track the status of your tasks, with everything saved locally to a `tasks.json` file.
 
+This project is a solution to the [Task Tracker](https://roadmap.sh/projects/task-tracker) challenge from [roadmap.sh](https://roadmap.sh).
+
 ## Features
 
 - Add new tasks
