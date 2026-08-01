@@ -12,10 +12,12 @@ This project is a solution to the [Task Tracker](https://roadmap.sh/projects/tas
 - Mark a task as in-progress or done
 - List all tasks, or filter by status (`todo`, `in-progress`, `done`)
 - Tasks are persisted locally in `tasks.json`, with `createdAt` and `updatedAt` timestamps
+- Graceful error handling for missing arguments, invalid IDs, unknown commands, and a missing/corrupted `tasks.json`
 
 ## Requirements
 
 - Python 3
+- No external libraries — only the standard library (`sys`, `os`, `json`, `datetime`)
 
 ## Usage
 
@@ -25,6 +27,7 @@ Run the script with `python main.py` followed by a command.
 
 ```bash
 python main.py add "Buy groceries"
+# Task added successfully (ID: 1)
 ```
 
 ### List tasks
@@ -69,12 +72,21 @@ Each task is stored as a JSON object with the following fields:
 | `id`        | Unique numeric identifier                     |
 | `description` | Task description                           |
 | `status`    | `todo`, `in-progress`, or `done`              |
-| `createdAt` | Timestamp when the task was created           |
-| `updatedAt` | Timestamp when the task was last updated      |
+| `createdAt` | ISO 8601 timestamp when the task was created  |
+| `updatedAt` | ISO 8601 timestamp when the task was last updated |
 
 ## Data storage
 
 Tasks are stored in a `tasks.json` file in the directory the script is run from. This file is created automatically the first time you add a task.
+
+## Design notes
+
+A few implementation details worth knowing if you're reading this as a reference:
+
+- **IDs are `max(existing_ids) + 1`, not `len(tasks) + 1`.** Using the list length breaks once a task has been deleted — you can end up assigning an ID that's already in use. Taking the max avoids that.
+- **Every command validates its own arguments before touching `tasks.json`** (missing description, missing ID, non-numeric ID, unknown status filter) so a bad command prints a clear message instead of crashing with a traceback.
+- **`load_tasks()` never raises on a missing or corrupted file** — a missing `tasks.json` is treated as "no tasks yet," and invalid JSON in the file prints a warning and falls back to an empty list rather than crashing.
+- **Commands are dispatched through a dictionary (`COMMANDS`)** mapping command name → handler function, instead of a long `if/elif` chain. This makes it easy to add a new command later without touching existing logic.
 
 ## License
 
